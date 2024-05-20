@@ -1,4 +1,5 @@
 import SwiftUI
+import Dependencies
 
 enum State: Equatable, Hashable {
 	case idle
@@ -7,26 +8,25 @@ enum State: Equatable, Hashable {
 	case error(ApiError)
 }
 
+
 @Observable
-class CountryModel: Hashable, Equatable {
+class CountryModel: Equatable, Hashable {
 	static func == (lhs: CountryModel, rhs: CountryModel) -> Bool {
-		lhs.state == rhs.state
-		&& lhs.countrySelected == rhs.countrySelected
+		lhs === rhs
 	}
 	func hash(into hasher: inout Hasher) {
-		hasher.combine(self.state)
+		hasher.combine(state)
 	}
 	
-	let apiClient: ApiClient
+	@ObservationIgnored 
+	@Dependency(\.apiClient) var apiClient
 	var state: State
 	var countrySelected: Country?
 	
 	init(
-		apiClient: ApiClient = .live,
 		state: State = .idle,
 		countrySelected: Country? = nil
 	) {
-		self.apiClient = apiClient
 		self.state = state
 		self.countrySelected = countrySelected
 	}
@@ -43,7 +43,9 @@ class CountryModel: Hashable, Equatable {
 	}
 	
 	func selectButtonTapped(country countrySelected: Country) {
-		self.countrySelected = countrySelected
+		self.countrySelected = self.countrySelected == countrySelected
+		? nil
+		: countrySelected
 	}
 }
 
@@ -93,9 +95,7 @@ struct CountryView: View {
 #Preview {
 	NavigationStack {
 		CountryView(
-			model: CountryModel(
-				apiClient: .mock
-			)
+			model: CountryModel()
 		)
 		.navigationTitle("Countries")
 	}

@@ -10,6 +10,7 @@
 		9A01E29A2BF121F100357A3B /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A01E2992BF121F100357A3B /* User.swift */; };
 		9A01E29F2BF1226500357A3B /* AddContactView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A01E29E2BF1226500357A3B /* AddContactView.swift */; };
 		9A2717772BF12B810052D28F /* CountryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A2717762BF12B810052D28F /* CountryView.swift */; };
+		9A403FE22BFBB8C800DE3AC2 /* Dependencies in Frameworks */ = {isa = PBXBuildFile; productRef = 9A403FE12BFBB8C800DE3AC2 /* Dependencies */; };
 		9A6EE34C2BFA6A0100EFB43F /* Country.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6EE34B2BFA6A0100EFB43F /* Country.swift */; };
 		9A6EE34E2BFA6A1D00EFB43F /* ApiClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6EE34D2BFA6A1D00EFB43F /* ApiClient.swift */; };
 		9A6EE35F2BFA725800EFB43F /* ContactsViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6EE35E2BFA725800EFB43F /* ContactsViewTests.swift */; };
@@ -61,6 +62,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A403FE22BFBB8C800DE3AC2 /* Dependencies in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -180,6 +182,9 @@
 			dependencies = (
 			);
 			name = Tutorial;
+			packageProductDependencies = (
+				9A403FE12BFBB8C800DE3AC2 /* Dependencies */,
+			);
 			productName = Tutorial;
 			productReference = 9AFD5A202BE7F1DB00A4696F /* Tutorial.app */;
 			productType = "com.apple.product-type.application";
@@ -215,6 +220,7 @@
 			mainGroup = 9AFD5A172BE7F1DB00A4696F;
 			packageReferences = (
 				9A6EE3622BFA799F00EFB43F /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+				9A403FE02BFBB84700DE3AC2 /* XCRemoteSwiftPackageReference "swift-dependencies" */,
 			);
 			productRefGroup = 9AFD5A212BE7F1DB00A4696F /* Products */;
 			projectDirPath = "";
@@ -531,6 +537,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		9A403FE02BFBB84700DE3AC2 /* XCRemoteSwiftPackageReference "swift-dependencies" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-dependencies";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.0;
+			};
+		};
 		9A6EE3622BFA799F00EFB43F /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
@@ -542,6 +556,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		9A403FE12BFBB8C800DE3AC2 /* Dependencies */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9A403FE02BFBB84700DE3AC2 /* XCRemoteSwiftPackageReference "swift-dependencies" */;
+			productName = Dependencies;
+		};
 		9A6EE3642BFA7A0200EFB43F /* SnapshotTesting */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9A6EE3622BFA799F00EFB43F /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;

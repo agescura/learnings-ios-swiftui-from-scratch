@@ -1,6 +1,56 @@
 
 import SwiftUI
 
+// Si tenemos un trozo de código que representa algo en concreto, es mejor crear un objeto que encapsule exactamente esto. Por ejemplo, la celda que pintaremos cada uno de los usuarios
+// Te dejo este codigo para que lo reemplaces en ContentView
+
+struct UserRowView: View {
+	let user: User
+	
+	var body: some View {
+		VStack (
+				alignment: .leading
+		) {
+				HStack{
+						Image(
+								systemName: "person"
+						)
+						.imageScale(
+								.large
+						)
+						.foregroundStyle(
+								.tint
+						)
+						Text(
+								user.userName
+						)
+				}
+				HStack{
+						Image(
+								systemName: "globe"
+						)
+						.imageScale(.large)
+						.foregroundStyle(.tint)
+						Text(user.nickName)
+				}
+				HStack{
+						Image(
+								systemName: "number"
+						)
+						.imageScale(
+								.large
+						)
+						.foregroundStyle(
+								.tint
+						)
+						Text(
+								user.phoneNumber
+						)
+				}
+		}
+	}
+}
+
 struct ContentView: View {
     
     @Bindable var model: ContentModel = ContentModel()
@@ -66,6 +116,9 @@ struct ContentView: View {
                             self.model.addUserIsPresented
                         )
                         
+											// Aquí deberias usar una función y encapsular este codigo dentro de la función en el modelo.
+											// Recuerda que toda lógica que tengas en la vista, es codigo que no vas a poder testear
+											
                         self.model.userToAdd = User(
                             userName: "",
                             nickName: "",

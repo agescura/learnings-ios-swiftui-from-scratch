@@ -3,22 +3,18 @@ import SwiftUI
 @Observable
 class AddContactModel: Identifiable, Equatable {
 	static func == (lhs: AddContactModel, rhs: AddContactModel) -> Bool {
-		lhs.user == rhs.user
-		&& lhs.countryModel == rhs.countryModel
+		lhs === rhs
 	}
 	
 	var user: User
 	var countryModel: CountryModel?
-	var onSave: (Country) -> Void
 	
 	init(
 		user: User,
-		countryModel: CountryModel? = nil,
-		onSave: @escaping (Country) -> Void = { _ in }
+		countryModel: CountryModel? = nil
 	) {
 		self.user = user
 		self.countryModel = countryModel
-		self.onSave = onSave
 	}
 	
 	var id: User.ID {
@@ -29,7 +25,6 @@ class AddContactModel: Identifiable, Equatable {
 		if let countrySelected = self.countryModel?.countrySelected {
 			self.user.country = countrySelected
 			self.countryModel = nil
-			self.onSave(countrySelected)
 		}
 	}
 	
@@ -49,6 +44,7 @@ struct AddContactView: View {
 	@Bindable var model: AddContactModel
 	
 	var body: some View {
+		let _ = print(self.model.countryModel?.countrySelected)
 		Form {
 			Section(header: Text("Write a name")) {
 				TextField("Name", text: self.$model.user.name)
@@ -78,6 +74,7 @@ struct AddContactView: View {
 						Button("Select country") {
 							self.model.selectCountryButtonTapped()
 						}
+						.disabled(model.countrySelected == nil)
 					}
 				}
 		}

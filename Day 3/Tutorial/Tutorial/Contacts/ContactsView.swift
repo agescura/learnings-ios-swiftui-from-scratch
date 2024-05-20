@@ -19,9 +19,7 @@ class ContactsModel: Equatable {
 	}
 	
 	func addUserButtonTapped() {
-		self.addContactModel = AddContactModel(user: .new, onSave: { country in
-			print(country)
-		})
+		self.addContactModel = AddContactModel(user: .new)
 	}
 	
 	func cancelButtonTapped() {

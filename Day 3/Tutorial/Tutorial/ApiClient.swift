@@ -1,4 +1,13 @@
 import Foundation
+import Dependencies
+
+extension DependencyValues {
+	var apiClient: ApiClient {
+		get { self[ApiClient.self] }
+		set { self[ApiClient.self] = newValue }
+	}
+}
+
 
 struct ApiClient {
 	var fetchCountries: () async throws -> [Country]
@@ -8,8 +17,8 @@ enum ApiError: Error, Equatable {
 	case unknown
 }
 
-extension ApiClient {
-	static var live: ApiClient {
+extension ApiClient: DependencyKey {
+	static var liveValue: ApiClient {
 		
 		return ApiClient(
 			fetchCountries: {
@@ -25,8 +34,8 @@ extension ApiClient {
 	}
 }
 
-extension ApiClient {
-	static var mock: ApiClient {
+extension ApiClient: TestDependencyKey {
+	static var previewValue: ApiClient {
 		return ApiClient(
 			fetchCountries: {
 				try await Task.sleep(for: .seconds(1))
@@ -46,7 +55,7 @@ extension ApiClient {
 }
 
 extension	ApiClient {
-	static var error: ApiClient {
+	static var testValue: ApiClient {
 		return ApiClient(
 			fetchCountries: {
 				try await Task.sleep(for: .seconds(1))
