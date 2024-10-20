@@ -8,23 +8,7 @@
 import SwiftUI
 
 struct ItemView: View {
-	@State var item: Item
-	
-	var cancel: () -> Void
-	var add: (Item) -> Void
-	var edit: (Item) -> Void
-	
-	init(
-		item: Item,
-		cancel: @escaping () -> Void,
-		add: @escaping (Item) -> Void = { _ in },
-		edit: @escaping (Item) -> Void = { _ in }
-	) {
-		self.item = item
-		self.cancel = cancel
-		self.add = add
-		self.edit = edit
-	}
+	@Binding var item: Item
 	
 	var body: some View {
 		Form {
@@ -40,27 +24,13 @@ struct ItemView: View {
 				}
 			}
 		}
-		.toolbar {
-			ToolbarItem(placement: .cancellationAction) {
-				Button("Cancel") {
-					self.cancel()
-				}
-			}
-			ToolbarItem(placement: .primaryAction) {
-				Button("Add") {
-					self.add(item)
-				}
-			}
-		}
 	}
 }
 
 #Preview {
 	NavigationStack {
 		ItemView(
-			item: .new,
-			cancel: {},
-			add: { _ in }
+            item: .constant(.new)
 		)
 	}
 }

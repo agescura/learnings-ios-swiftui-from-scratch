@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct Item: Equatable, Identifiable {
+struct Item: Equatable, Identifiable, Hashable {
 	let id: UUID
 	var name: String
 	var color: Color?
@@ -26,7 +26,7 @@ struct Item: Equatable, Identifiable {
 		self.status = status
 	}
 	
-	enum Status: Equatable {
+	enum Status: Equatable, Hashable {
 		case inStock(quantity: Int)
 		case outOfStock(isOnBackOrder: Bool)
 		
