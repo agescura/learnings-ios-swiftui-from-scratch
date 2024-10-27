@@ -21,7 +21,10 @@ struct NavigationInDepthApp: App {
 							Item(name: "Headphones", color: .red, status: .outOfStock(isOnBackOrder: true))
 						],
 						itemToDelete: nil,
-						itemToAdd: nil
+						itemToAdd: ItemModel(
+							colorPickerIsPresented: true,
+							item: item
+						)
 					)
 				)
 			)

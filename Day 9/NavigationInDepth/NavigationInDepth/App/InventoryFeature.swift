@@ -20,13 +20,13 @@ enum Route {
 class InventoryModel {
 	var inventory: [Item]
 	var itemToDelete: Item?
-	var itemToAdd: Item?
+	var itemToAdd: ItemModel?
     var itemToEdit: Item?
 	
 	init(
 		inventory: [Item] = [],
 		itemToDelete: Item? = nil,
-		itemToAdd: Item? = nil,
+		itemToAdd: ItemModel? = nil,
         itemToEdit: Item? = nil
 	) {
 		self.inventory = inventory
@@ -50,19 +50,19 @@ class InventoryModel {
 	
 	func dismissButtonTapped() {
 		self.itemToDelete = nil
+		self.itemToAdd = nil
+		self.itemToEdit = nil
 	}
 	
 	func addItemButtonTapped() {
-		self.itemToAdd = .new
-	}
-	
-	func cancelButtonTapped() {
-		self.itemToAdd = nil
+		self.itemToAdd = ItemModel(item: .new)
 	}
 	
 	func confirmAddButtonTapped(_ item: Item) {
-        self.itemToAdd = nil
-		self.inventory.append(item)
+		withAnimation {
+			self.inventory.append(item)
+		}
+		self.itemToAdd = nil
 	}
     
     func editButtonTapped(_ item: Item) {
@@ -120,72 +120,47 @@ struct InventoryView: View {
 				}
 			}
 		}
-//        .alert(
-//            unwrap: self.$model.itemToDelete,
-//            title: { itemToDelete in itemToDelete.name },
-//            actions: { _ in
-//                Button(
-//                    "Delete",
-//                    role: .destructive,
-//                    action: { self.model.deleteItemButtonTapped(item: itemToDelete) }
-//                )
-//                Button("Cancel", role: .cancel) { self.model.dismissButtonTapped() }
-//            },
-//            message: { itemToDelete in
-//                " asdasdas"
-//            }
-//        )
 		.alert(
-			self.model.itemToDelete?.name ?? "",
-			isPresented: self.$model.itemToDelete.isPresent(),
-			presenting: self.model.itemToDelete
-		) { itemToDelete in
-			Button(
-				"Delete",
-				role: .destructive,
-				action: { self.model.deleteItemButtonTapped(item: itemToDelete) }
-			)
-			Button("Cancel", role: .cancel) { self.model.dismissButtonTapped() }
-		}
-        .alert(
-            unwrap: self.$model.itemToDelete,
-            title: { itemToDelete in itemToDelete.name },
-            actions: { itemToDelete in
-                Button(
-                    "Delete",
-                    role: .destructive,
-                    action: { self.model.deleteItemButtonTapped(item: itemToDelete) }
-                )
-                Button("Cancel", role: .cancel) { self.model.dismissButtonTapped() }
-            },
-            message: { _ in "Cuidado, esta accion no es reversible." }
-        )
+			title: { Text($0.name) },
+			presenting: self.$model.itemToDelete,
+			actions: { itemToDelete in
+				Button(
+					"Delete",
+					role: .destructive,
+					action: { self.model.deleteItemButtonTapped(item: itemToDelete) }
+				)
+				Button("Cancel", role: .cancel) { self.model.dismissButtonTapped() }
+			},
+			message: { itemToDelete in
+				Text("Are you sure you want to delete the \(itemToDelete.name)")
+			}
+		)
         .sheet(
             unwrap: self.$model.itemToAdd
         ) { $itemToAdd in
             NavigationStack {
-                ItemView(item: $itemToAdd)
+                ItemView(model: itemToAdd)
                     .navigationTitle("Add new item")
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
                             Button("Cancel") {
-                                self.model.cancelButtonTapped()
+                                self.model.dismissButtonTapped()
                             }
                         }
                         ToolbarItem(placement: .primaryAction) {
                             Button("Add") {
-                                self.model.confirmAddButtonTapped($itemToAdd.wrappedValue)
+								self.model.confirmAddButtonTapped(itemToAdd.item)
                             }
                         }
                     }
             }
         }
-        .navigationDestination(
-            unwrap: self.$model.itemToEdit
-        ) { $itemToEdit in
-            Text(itemToEdit.name)
-                .navigationTitle(itemToEdit.name)
-        }
+//        .navigationDestination(
+//            unwrap: self.$model.itemToEdit
+//        ) { $itemToEdit in
+//			ItemView(item: $itemToEdit)
+//                .navigationTitle(itemToEdit.name)
+//        }
 	}
 }
 
@@ -247,29 +222,30 @@ extension Binding {
 }
 
 extension Binding {
-    init?(unwrap binding: Binding<Value?>) {
-        guard let wrappedValue = binding.wrappedValue else { return nil }
-        
-        self.init(
-            get: { wrappedValue },
-            set: { binding.wrappedValue = $0 }
-        )
-    }
+  init?(unwrap binding: Binding<Value?>) {
+	guard let wrappedValue = binding.wrappedValue
+	else { return nil }
+	
+	self.init(
+	  get: { wrappedValue },
+	  set: { binding.wrappedValue = $0 }
+	)
+  }
 }
 
 extension View {
-    func sheet<Value, Content>(
-        unwrap optionalValue: Binding<Value?>,
-        @ViewBuilder content: @escaping (Binding<Value>) -> Content
-    ) -> some View where Value: Identifiable, Content: View {
-        self.sheet(
-            item: optionalValue
-        ) { _ in
-            if let value = Binding(unwrap: optionalValue) {
-                content(value)
-            }
-        }
-    }
+  func sheet<Value, Content>(
+	unwrap optionalValue: Binding<Value?>,
+	@ViewBuilder content: @escaping (Binding<Value>) -> Content
+  ) -> some View where Value: Identifiable, Content: View {
+	self.sheet(
+	  item: optionalValue
+	) { _ in
+	  if let value = Binding(unwrap: optionalValue) {
+		content(value)
+	  }
+	}
+  }
 }
 
 extension View {
@@ -288,23 +264,20 @@ extension View {
 }
 
 extension View {
-    @ViewBuilder
-    func alert<Value, Actions, Message>(
-        unwrap optionalValue: Binding<Value?>,
-        title: (Value) -> String,
-        @ViewBuilder actions: @escaping (Value) -> Actions,
-        @ViewBuilder message: @escaping (Value) -> Message
-    ) -> some View where Content: View {
-        if let value = Binding(unwrap: optionalValue) {
-            self.alert(
-                title(value.wrappedValue),
-                isPresented: optionalValue.isPresent(),
-                presenting: optionalValue.wrappedValue,
-                actions: actions(value.wrappedValue),
-                message: message(value.wrappedValue)
-            )
-        }
-    }
+	func alert<A: View, M: View, T>(
+		title: (T) -> Text,
+		presenting data: Binding<T?>,
+		@ViewBuilder actions: @escaping (T) -> A,
+		@ViewBuilder message: @escaping (T) -> M
+	) -> some View {
+		self.alert(
+			data.wrappedValue.map(title) ?? Text(""),
+			isPresented: data.isPresent(),
+			presenting: data.wrappedValue,
+			actions: actions,
+			message: message
+		)
+	}
 }
 
 /*

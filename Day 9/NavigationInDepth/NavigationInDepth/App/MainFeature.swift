@@ -33,7 +33,7 @@ struct MainView: View {
 			.tabItem { Text("One") }
 			.tag(Tab.one)
 			
-			NavigationStack {
+			NavigationView {
 				InventoryView(
 					model: self.model.inventoryModel
 				)
