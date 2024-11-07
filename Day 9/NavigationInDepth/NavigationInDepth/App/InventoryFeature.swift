@@ -8,50 +8,66 @@
 import Foundation
 import SwiftUI
 
-// Make impossible states impossble
-
-enum Route {
-	case delete(Item)
-	case add(Item)
-	case edit(Item)
-}
-
 @Observable
 class InventoryModel {
-	var inventory: [Item]
-	var itemToDelete: Item?
+	var inventory: [ItemRowModel]
 	var itemToAdd: ItemModel?
-    var itemToEdit: Item?
+    var itemToEdit: ItemModel?
+	var dismissAlert: Bool = false
 	
 	init(
-		inventory: [Item] = [],
-		itemToDelete: Item? = nil,
+		inventory: [ItemRowModel] = [],
 		itemToAdd: ItemModel? = nil,
-        itemToEdit: Item? = nil
+        itemToEdit: ItemModel? = nil
 	) {
-		self.inventory = inventory
-		self.itemToDelete = itemToDelete
+		self.inventory = []
 		self.itemToAdd = itemToAdd
         self.itemToEdit = itemToEdit
+
+		for itemRowModel in inventory {
+			self.bind(itemRowModel: itemRowModel)
+		}
+	}
+	
+	private func bind(itemRowModel: ItemRowModel) {
+		itemRowModel.onDeleteItem = { [weak self, item = itemRowModel.item] in
+			guard let self else { return }
+			self.deleteItemButtonTapped(item: item)
+		}
+		itemRowModel.onDuplicate = { [weak self, item = itemRowModel.item] in
+			guard let self else { return }
+			self.duplicateTapped(item)
+		}
+		self.inventory.append(itemRowModel)
 	}
 	
 	func deleteItemButtonTapped(item: Item) {
 		guard
-			let index = self.inventory.firstIndex(where: { $0.id == item.id })
+			let index = self.inventory.firstIndex(where: { $0.item.id == item.id })
 		else { return }
 		_ = withAnimation {
 			self.inventory.remove(at: index)
 		}
 	}
 	
-	func alertButtonTapped(item: Item) {
-		self.itemToDelete = item
-	}
-	
 	func dismissButtonTapped() {
-		self.itemToDelete = nil
 		self.itemToAdd = nil
 		self.itemToEdit = nil
+		self.dismissAlert = false
+	}
+	
+	func popButtonTapped(_ item: Item) {
+		guard
+			let index = self.inventory.firstIndex(where: { $0.item.id == item.id })
+		else { return }
+		
+		if self.inventory[index].item != item {
+			self.dismissAlert = true
+		} else {
+			self.itemToAdd = nil
+			self.itemToEdit = nil
+			self.dismissAlert = false
+		}
 	}
 	
 	func addItemButtonTapped() {
@@ -60,14 +76,28 @@ class InventoryModel {
 	
 	func confirmAddButtonTapped(_ item: Item) {
 		withAnimation {
-			self.inventory.append(item)
+			self.inventory.append(ItemRowModel(item: item))
 		}
 		self.itemToAdd = nil
 	}
     
     func editButtonTapped(_ item: Item) {
-        self.itemToEdit = item
+        self.itemToEdit = ItemModel(item: item)
     }
+	
+	func updateButtonTapped(_ item: Item) {
+		guard
+			let index = self.inventory.firstIndex(where: { $0.item.id == item.id })
+		else { return }
+		self.inventory[index].item = item
+		self.itemToEdit = nil
+	}
+	
+	func duplicateTapped(_ item: Item) {
+		withAnimation {
+			self.inventory.append(ItemRowModel(item:item))
+		}
+	}
 }
 
 struct InventoryView: View {
@@ -75,41 +105,8 @@ struct InventoryView: View {
     
 	var body: some View {
 		List {
-			ForEach(self.model.inventory) { item in
-				HStack {
-					VStack(alignment: .leading) {
-						Text(item.name)
-						
-						switch item.status {
-							case let .inStock(quantity):
-								Text("In stock: \(quantity)")
-							case let .outOfStock(isOnBackOrder):
-								Text("Out of stock" + (isOnBackOrder ? ": on back order" : ""))
-						}
-					}
-					
-					Spacer()
-					
-					if let color = item.color {
-						Rectangle()
-							.frame(width: 30, height: 30)
-							.foregroundColor(color.swiftUIColor)
-							.border(Color.black, width: 1)
-					}
-					
-					Button(action: { self.model.alertButtonTapped(item: item) }) {
-						Image(systemName: "trash.fill")
-					}
-					.padding(.leading)
-                    
-                    Button {
-                        self.model.editButtonTapped(item)
-                    } label: {
-                        Image(systemName: "arrow.forward")
-                    }
-				}
-				.buttonStyle(.plain)
-				.foregroundColor(item.status.isInStock ? nil : Color.gray)
+			ForEach(self.model.inventory) { itemRowModel in
+				ItemRowView(model: itemRowModel)
 			}
 		}
 		.navigationTitle("Inventory")
@@ -120,21 +117,6 @@ struct InventoryView: View {
 				}
 			}
 		}
-		.alert(
-			title: { Text($0.name) },
-			presenting: self.$model.itemToDelete,
-			actions: { itemToDelete in
-				Button(
-					"Delete",
-					role: .destructive,
-					action: { self.model.deleteItemButtonTapped(item: itemToDelete) }
-				)
-				Button("Cancel", role: .cancel) { self.model.dismissButtonTapped() }
-			},
-			message: { itemToDelete in
-				Text("Are you sure you want to delete the \(itemToDelete.name)")
-			}
-		)
         .sheet(
             unwrap: self.$model.itemToAdd
         ) { $itemToAdd in
@@ -155,12 +137,40 @@ struct InventoryView: View {
                     }
             }
         }
-//        .navigationDestination(
-//            unwrap: self.$model.itemToEdit
-//        ) { $itemToEdit in
-//			ItemView(item: $itemToEdit)
-//                .navigationTitle(itemToEdit.name)
-//        }
+        .navigationDestination(
+            unwrap: self.$model.itemToEdit
+        ) { $itemToEdit in
+			ItemView(model: itemToEdit)
+				.navigationTitle(itemToEdit.item.name)
+				.navigationBarBackButtonHidden()
+				.toolbar {
+					ToolbarItem(placement: .cancellationAction) {
+						Button("Cancel") {
+							self.model.popButtonTapped(itemToEdit.item)
+						}
+					}
+					ToolbarItem(placement: .primaryAction) {
+						Button("Update") {
+							self.model.updateButtonTapped(itemToEdit.item)
+						}
+					}
+				}
+        }
+		.alert(
+			"Do you want to dismiss?",
+			isPresented: self.$model.dismissAlert,
+			actions: {
+				Button(
+					"Dismiss",
+					role: .cancel,
+					action: {
+						self.model.dismissAlert = false
+						self.model.itemToEdit = nil
+					}
+				)
+				Button("Cancel") { self.model.dismissAlert = false }
+			}
+		)
 	}
 }
 
@@ -169,10 +179,10 @@ struct InventoryView: View {
 		InventoryView(
 			model: InventoryModel(
 				inventory: [
-					Item(name: "Keyboard", color: .blue, status: .inStock(quantity: 100)),
-					Item(name: "Charger", color: .yellow, status: .inStock(quantity: 20)),
-					Item(name: "Phone", color: .white, status: .outOfStock(isOnBackOrder: true)),
-					Item(name: "Headphones", color: .red, status: .outOfStock(isOnBackOrder: true))
+					ItemRowModel(item: Item(name: "Keyboard", color: .blue, status: .inStock(quantity: 100))),
+					ItemRowModel(item: Item(name: "Charger", color: .yellow, status: .inStock(quantity: 20))),
+					ItemRowModel(item: Item(name: "Phone", color: .white, status: .outOfStock(isOnBackOrder: true))),
+					ItemRowModel(item: Item(name: "Headphones", color: .red, status: .outOfStock(isOnBackOrder: true)))
 				]
 			)
 		)
@@ -184,8 +194,8 @@ struct InventoryView: View {
 //}
 
 struct TestStateBinding: View {
-    @State var miEstado: Int = 3
-    
+	@State var miEstado: Int = 3
+	
     var body: some View {
         Text("Test")
         Text("\(miEstado)")
@@ -280,17 +290,5 @@ extension View {
 	}
 }
 
-/*
- Navigation
- 
- TabView
- 
- Alerts
- ConfirmationDialog
- 
- Sheets
- FullScreenCover
- Popover
- 
- Links
- */
+
+

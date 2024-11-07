@@ -15,12 +15,11 @@ struct NavigationInDepthApp: App {
 				model: MainModel(
 					inventoryModel: InventoryModel(
 						inventory: [
-							item,
-							Item(name: "Charger", color: .yellow, status: .inStock(quantity: 20)),
-							Item(name: "Phone", color: .white, status: .outOfStock(isOnBackOrder: true)),
-							Item(name: "Headphones", color: .red, status: .outOfStock(isOnBackOrder: true))
+							ItemRowModel(item: item),
+							ItemRowModel(item: Item(name: "Charger", color: .yellow, status: .inStock(quantity: 20))),
+							ItemRowModel(item: Item(name: "Phone", color: .white, status: .outOfStock(isOnBackOrder: true))),
+							ItemRowModel(item: Item(name: "Headphones", color: .red, status: .outOfStock(isOnBackOrder: true)))
 						],
-						itemToDelete: nil,
 						itemToAdd: ItemModel(
 							colorPickerIsPresented: true,
 							item: item

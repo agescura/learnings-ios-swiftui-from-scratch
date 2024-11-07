@@ -8,7 +8,7 @@
 import SwiftUI
 
 @Observable
-class ItemModel: Identifiable {
+class ItemModel: Identifiable, Hashable, Equatable {
 	var item: Item
 	var colorPickerIsPresented: Bool
 	
@@ -18,6 +18,14 @@ class ItemModel: Identifiable {
 	) {
 		self.colorPickerIsPresented = colorPickerIsPresented
 		self.item = item
+	}
+	
+	static func == (lhs: ItemModel, rhs: ItemModel) -> Bool {
+		lhs.item == rhs.item
+	}
+	
+	func hash(into hasher: inout Hasher) {
+		hasher.combine(item)
 	}
 }
 
@@ -46,16 +54,6 @@ struct ItemView: View {
 						.frame(minWidth: 50)
 				}
 			}
-			
-//			Picker(selection: self.$model.item.color, label: Text("Color")) {
-//				Text("None")
-//					.tag(Item.Color?.none)
-//				
-//				ForEach(Item.Color.defaults, id: \.name) { color in
-//					Text(color.name)
-//						.tag(Optional(color))
-//				}
-//			}
 			
 			if case let .inStock(quantity) = self.model.item.status {
 				Section(header: Text("In stock")) {

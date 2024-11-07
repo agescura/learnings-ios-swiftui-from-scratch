@@ -16,9 +16,9 @@ class MainModel {
 	func open(url: URL) {
 		print(url)
 		
-		guard let item = inventoryModel.inventory.first(where: { $0.id == UUID(uuidString: url.lastPathComponent) }) else { return }
-		
-		inventoryModel.itemToDelete = item
+//		guard let itemRowModel = inventoryModel.inventory.first(where: { $0.item.id == UUID(uuidString: url.lastPathComponent) }) else { return }
+//		
+//		inventoryModel.inventory[0].itemToDelete = itemRowModel.item
 	}
 }
 
@@ -33,7 +33,7 @@ struct MainView: View {
 			.tabItem { Text("One") }
 			.tag(Tab.one)
 			
-			NavigationView {
+			NavigationStack {
 				InventoryView(
 					model: self.model.inventoryModel
 				)
@@ -54,10 +54,10 @@ struct MainView: View {
 		model: MainModel(
 			inventoryModel: InventoryModel(
 				inventory: [
-					Item(name: "Keyboard", color: .blue, status: .inStock(quantity: 100)),
-					Item(name: "Charger", color: .yellow, status: .inStock(quantity: 20)),
-					Item(name: "Phone", color: .white, status: .outOfStock(isOnBackOrder: true)),
-					Item(name: "Headphones", color: .red, status: .outOfStock(isOnBackOrder: true))
+					ItemRowModel(item: Item(name: "Keyboard", color: .blue, status: .inStock(quantity: 100))),
+					ItemRowModel(item: Item(name: "Charger", color: .yellow, status: .inStock(quantity: 20))),
+					ItemRowModel(item: Item(name: "Phone", color: .white, status: .outOfStock(isOnBackOrder: true))),
+					ItemRowModel(item: Item(name: "Headphones", color: .red, status: .outOfStock(isOnBackOrder: true)))
 				]
 			)
 		)
