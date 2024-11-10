@@ -16,12 +16,6 @@ class MainModel {
 	func open(url: URL) {
 		print(url)
 		
-		/*
-		 // https://www.mystore.com/add?color=green&status=100
-		 // https://www.mystore.com/item/d6d98b88-c866-4496-9bd4-de7ba48d0f52/edit/color....
-			
-		 */
-		
 //		guard let itemRowModel = inventoryModel.inventory.first(where: { $0.item.id == UUID(uuidString: url.lastPathComponent) }) else { return }
 //		
 //		inventoryModel.inventory[0].itemToDelete = itemRowModel.item
